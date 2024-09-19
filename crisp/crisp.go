@@ -78,14 +78,19 @@ type Response struct {
   *http.Response
 }
 
-type errorResponse struct {
+type ErrorResponse struct {
   Response *http.Response
-  Reason   string  `json:"reason,omitempty"`
+  Reason   string     `json:"reason,omitempty"`
+  Data     *errorData `json:"data,omitempty"`
+}
+
+type errorData struct {
+  Message string `json:"message,omitempty"`
 }
 
 
 // Error prints an error response
-func (response *errorResponse) Error() string {
+func (response *ErrorResponse) Error() string {
   return fmt.Sprintf("%v %v: %d %v",
     response.Response.Request.Method, response.Response.Request.URL,
     response.Response.StatusCode, response.Reason)
@@ -302,7 +307,7 @@ func checkResponse(response *http.Response) error {
   }
 
   // Map response error data (eg. HTTP 4xx)
-  errorResponse := &errorResponse{Response: response}
+  errorResponse := &ErrorResponse{Response: response}
 
   data, err := ioutil.ReadAll(response.Body)
   if err == nil && data != nil {
